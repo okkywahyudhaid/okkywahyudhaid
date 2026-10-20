@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2f4f8; --surface: #ffffff; --ink: #0f1b33; --muted: #5a6a85;
+    --line: #dde3ee; --accent: #1f4b8f; --accent-ink: #ffffff;
+    --gold: #b8913a; --ok: #1f7a54; --bad: #b3392f;
+    --kompleks: #7a4aa8; --kompleks-ink: #ffffff;
+    --navy: #0a1a33; --navy2: #13335f; --gold-lt: #d8b45c;
+    --shadow: 0 1px 2px rgba(15,27,51,.06), 0 10px 30px rgba(15,27,51,.07);
+    --hdr: 150px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a1222; --surface: #111d33; --ink: #e9eef8; --muted: #9db0cc;
+      --line: #23365a; --accent: #6aa6e6; --accent-ink: #08121f;
+      --gold: #d8b45c; --ok: #5cc496; --bad: #f08a80;
+      --kompleks: #c49af0; --kompleks-ink: #0f1724;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    font-size: 16px; line-height: 1.55;
+  }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, "Times New Roman", serif; margin: 0; }
+  .hidden { display: none !important; }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .btn {
+    min-height: 46px; border: 0; border-radius: 10px; padding: 0 20px; font-weight: 700;
+    background: var(--accent); color: var(--accent-ink); transition: filter .15s, transform .05s;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; filter: none; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn.sm { min-height: 40px; padding: 0 16px; }
+  .btn.lg { min-height: 56px; font-size: 1.05rem; width: 100%; max-width: 420px; }
+
+  .logo-wrap { width: 120px; height: 120px; display: grid; place-items: center; flex: none; }
+  .logo-wrap img { width: 125%; height: 125%; object-fit: contain; }
+  .logo-wrap:not(.ada) { display: none; }
+  .logo-wrap.sm { width: 44px; height: 44px; }
+
+  /* ================= LOGIN ================= */
+  #login { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); }
+  .brand-panel {
+    position: relative; overflow: hidden; color: #fff; text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 40px;
+    background:
+      radial-gradient(circle at 18% 12%, rgba(216,180,92,.22), transparent 42%),
+      radial-gradient(circle at 88% 92%, rgba(106,166,230,.20), transparent 46%),
+      linear-gradient(160deg, var(--navy), var(--navy2));
+  }
+  .brand-panel::after {
+    content: ""; position: absolute; width: 520px; height: 520px; border-radius: 50%;
+    border: 1px solid rgba(216,180,92,.22); right: -180px; bottom: -200px; pointer-events: none;
+    box-shadow: 0 0 0 48px rgba(255,255,255,.025), 0 0 0 110px rgba(255,255,255,.02);
+  }
+  .brand-panel > * { position: relative; z-index: 1; }
+  .eyebrow { letter-spacing: .3em; font-size: .78rem; font-weight: 700; color: var(--gold-lt); margin-top: 26px; }
+  .brand-panel h1 { font-size: clamp(1.6rem, 3vw, 2.4rem); line-height: 1.15; margin-top: 8px; }
+  .rule { width: 56px; height: 3px; border-radius: 2px; background: var(--gold-lt); margin: 20px auto 0; }
+  .brand-note { margin-top: 18px; max-width: 320px; font-size: .92rem; color: rgba(255,255,255,.72); }
+  .tag { position: absolute !important; bottom: 18px; left: 0; right: 0; font-size: .82rem; color: rgba(255,255,255,.5); letter-spacing: .08em; }
+
+  .form-panel { display: grid; place-items: center; padding: 32px 20px; }
+  .card-login {
+    width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 20px; padding: 30px 28px; box-shadow: var(--shadow);
+  }
+  .card-login h2 { font-size: 1.6rem; }
+  .card-login .sub { margin: 4px 0 18px; color: var(--muted); font-size: .95rem; }
+  .info {
+    border: 1px solid var(--line); border-left: 4px solid var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--surface));
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: .93rem;
+  }
+  label.lbl { display: block; font-weight: 600; font-size: .9rem; margin: 14px 0 6px; }
+  .input {
+    width: 100%; min-height: 50px; padding: 0 14px; font: inherit; font-size: 16px; color: var(--ink);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+  }
+  .input:focus { border-color: var(--accent); background: var(--surface); }
+  .pw { position: relative; }
+  .pw .input { padding-right: 84px; }
+  .pw button {
+    position: absolute; right: 6px; top: 6px; bottom: 6px; border: 0; background: transparent; color: var(--accent);
+    font-weight: 700; font-size: .85rem; padding: 0 10px; border-radius: 8px;
+  }
+  .error { color: var(--bad); margin-top: 10px; min-height: 1.4em; font-size: .92rem; }
+  .card-login .btn { width: 100%; margin-top: 14px; min-height: 52px; }
+
+  /* ================= PETUNJUK ================= */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar-inner { max-width: 860px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+  .topbar .judul { flex: 1; min-width: 0; line-height: 1.2; }
+  .topbar .judul b { display: block; font-size: .95rem; }
+  .topbar .judul span { color: var(--muted); font-size: .82rem; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 48px; }
+  .hero {
+    color: #fff; border-radius: 20px; padding: 26px 24px; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 90% 0%, rgba(216,180,92,.25), transparent 45%), linear-gradient(160deg, var(--navy), var(--navy2));
+  }
+  .hero .kecil { color: var(--gold-lt); letter-spacing: .22em; font-size: .75rem; font-weight: 700; }
+  .hero h2 { font-size: clamp(1.4rem, 4vw, 1.9rem); margin: 6px 0 4px; }
+  .hero p { margin: 0; color: rgba(255,255,255,.78); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+  .stat { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 12px 8px; text-align: center; }
+  .stat b { display: block; font-family: "Fraunces", Georgia, serif; font-size: 1.5rem; line-height: 1.2; }
+  .stat span { font-size: .78rem; color: rgba(255,255,255,.72); }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-top: 16px; box-shadow: var(--shadow); }
+  .panel h3 { font-size: 1.15rem; margin-bottom: 14px; }
+  ol.langkah { counter-reset: n; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  ol.langkah li { counter-increment: n; display: flex; gap: 12px; align-items: flex-start; }
+  ol.langkah li::before {
+    content: counter(n); flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: .85rem; margin-top: 1px;
+  }
+  .panel.aturan { border-left: 4px solid var(--bad); }
+  ul.larang { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  ul.larang li { padding-left: 26px; position: relative; }
+  ul.larang li::before { content: "✕"; position: absolute; left: 0; top: 0; color: var(--bad); font-weight: 700; }
+  .catatan {
+    margin-top: 14px; padding: 12px 14px; border-radius: 10px; font-size: .93rem;
+    background: color-mix(in srgb, var(--gold) 14%, var(--surface)); border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  }
+  .mulai { margin-top: 24px; text-align: center; }
+  .mulai small { display: block; margin-top: 10px; color: var(--muted); }
+  .berjalan { margin-top: 16px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); border-left: 4px solid var(--gold); background: var(--surface); }
+
+  /* ================= UJIAN ================= */
+  #ujian { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  header.menu { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 2px 12px rgba(15,27,51,.06); }
+  .menu-inner { max-width: 860px; margin: 0 auto; padding: 10px 16px; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 12px; align-items: center; }
+  .brand-mini { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-mini div { line-height: 1.2; min-width: 0; }
+  .brand-mini b { display: block; font-size: .92rem; }
+  .brand-mini span { color: var(--muted); font-size: .8rem; }
+  .timer {
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.4rem; letter-spacing: .02em;
+    padding: 6px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+  }
+  .timer.warn { color: var(--bad); border-color: var(--bad); }
+  .who { min-width: 0; }
+  .who b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .95rem; }
+  .who span { color: var(--muted); font-size: .85rem; }
+  .aksi-menu { display: flex; gap: 8px; }
+  .nav { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; max-height: 92px; overflow-y: auto; padding: 2px 0; }
+  .nav button {
+    width: 36px; height: 36px; padding: 0; border-radius: 8px; font-weight: 700; font-size: .85rem;
+    background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+  }
+  .nav button.done { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .nav button.pgk { border-radius: 50%; border-color: var(--kompleks); }
+  .nav button.pgk.done { background: var(--kompleks); color: var(--kompleks-ink); border-color: var(--kompleks); }
+  .legenda { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: .8rem; color: var(--muted); }
+  .legenda .sw { display: inline-block; width: 14px; height: 14px; border: 2px solid; margin-right: 6px; vertical-align: -2px; }
+  .legenda .sw.pg { border-radius: 4px; border-color: var(--accent); }
+  .legenda .sw.pgk { border-radius: 50%; border-color: var(--kompleks); }
+
+  main { max-width: 860px; margin: 0 auto; padding: 20px 16px 70px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px;
+    margin-bottom: 16px; box-shadow: var(--shadow); scroll-margin-top: var(--hdr);
+  }
+  .card.pg { border-left: 4px solid var(--accent); }
+  .card.pgk { border-left: 4px solid var(--kompleks); }
+  .card.belum { border-color: var(--bad); border-left-color: var(--bad); }
+  .no { color: var(--muted); font-weight: 700; margin-bottom: 6px; font-size: .9rem; letter-spacing: .04em; text-transform: uppercase; }
+  .badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: 1px 10px; border-radius: 999px; border: 1px solid; margin-left: 8px; text-transform: none; letter-spacing: 0; }
+  .badge.pg { color: var(--accent); }
+  .badge.pgk { color: var(--kompleks); }
+  .petunjuk { color: var(--muted); font-size: .9rem; margin: 0 0 8px; }
+  .teks { font-size: 1.08rem; margin: 0 0 14px; white-space: pre-wrap; }
+  .gambar { display: block; max-width: 100%; max-height: 340px; margin: 0 0 14px; border-radius: 10px; border: 1px solid var(--line); pointer-events: none; }
+  .gambar-load { color: var(--muted); font-size: .9rem; margin: 0 0 12px; }
+  .opsi {
+    display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; min-height: 52px;
+    border: 1px solid var(--line); border-radius: 12px; margin-top: 8px; cursor: pointer; transition: border-color .12s, background .12s;
+  }
+  .opsi:hover { border-color: var(--accent); }
+  .opsi input { position: absolute; opacity: 0; pointer-events: none; }
+  .opsi .huruf {
+    flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 700;
+    border: 1px solid var(--line); background: var(--bg);
+  }
+  .opsi:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); }
+  .opsi:has(input:checked) .huruf { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .opsi.cek .huruf { border-radius: 8px; }
+  .opsi.cek:has(input:checked) { border-color: var(--kompleks); background: color-mix(in srgb, var(--kompleks) 13%, transparent); }
+  .opsi.cek:has(input:checked) .huruf { background: var(--kompleks); color: var(--kompleks-ink); border-color: var(--kompleks); }
+  .opsi:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  #hasil { text-align: center; padding: 40px 20px; }
+  #hasil .skor { font-family: "Fraunces", Georgia, serif; font-size: 4rem; font-weight: 700; color: var(--ok); line-height: 1.1; }
+  #status { text-align: center; color: var(--muted); padding: 40px 0; }
+
+  dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--ink); width: calc(100% - 40px); max-width: 400px; padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  dialog::backdrop { background: rgba(8, 16, 30, .6); }
+  dialog h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  dialog p { margin: 0 0 20px; }
+  dialog .aksi { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ================= RESPONSIVE ================= */
+  @media (max-width: 820px) {
+    #login { grid-template-columns: 1fr; align-content: start; }
+    .brand-panel { padding: 28px 20px 70px; }
+    .brand-panel .logo-wrap { width: 88px; height: 88px; }
+    .eyebrow { margin-top: 16px; }
+    .brand-note, .tag { display: none; }
+    .rule { margin-top: 14px; }
+    .form-panel { margin-top: -44px; padding: 0 16px 28px; align-items: start; }
+    .card-login { padding: 24px 20px; }
+  }
+  @media (max-width: 600px) {
+    .hero { padding: 22px 18px; }
+    .stats { gap: 8px; }
+    .panel { padding: 18px; }
+    .menu-inner { padding: 8px 12px; gap: 6px 10px; }
+    .timer { font-size: 1.2rem; padding: 4px 10px; }
+    .nav { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; max-height: none; padding-bottom: 6px; scroll-snap-type: x proximity; }
+    .nav button { flex: none; scroll-snap-align: start; }
+    .legenda { display: none; }
+    .card { padding: 18px; }
+    .btn.sm { padding: 0 12px; }
+    main { padding: 14px 12px 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login">
+  <div class="brand-panel">
+    <div class="logo-wrap"><img class="logo-img" alt="Logo sekolah"></div>
+    <div class="eyebrow"></div>
+    <h1>TRYOUT TKA - SMPN 1 JETIS</h1>
+    <div class="rule"></div>
+    <p class="brand-note">Kerjakan dengan jujur dan teliti</p>
+    <div class="tag">#spensatis</div>
+  </div>
+  <div class="form-panel">
+    <div class="card-login">
+      <h2>Masuk</h2>
+      <p class="sub">Masukkan username dan token ujian dari pengawas.</p>
+      <div class="info hidden" id="loginInfo" role="status"></div>
+      <label class="lbl" for="u">Username</label>
+      <input class="input" type="text" id="u" name="uid_ujian" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly')">
+      <label class="lbl" for="p">Token</label>
+      <div class="pw">
+        <input class="input" type="password" id="p" name="tkn_ujian" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+        <button type="button" id="btnLihat" aria-label="Tampilkan token">Lihat</button>
+      </div>
+      <div class="error" id="loginError" role="alert"></div>
+      <button class="btn" id="btnLogin">Masuk</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PETUNJUK UJIAN ============ -->
+<section id="petunjuk" class="hidden">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo-wrap sm"><img class="logo-img" alt="Logo sekolah"></div>
+      <div class="judul"><b>TRYOUT TKA</b><span>SMP Negeri 1 Jetis</span></div>
+      <button class="btn ghost sm" id="btnKeluarP">Keluar</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero">
+      <div class="kecil">PETUNJUK UJIAN</div>
+      <h2 id="salam">Selamat datang</h2>
+      <p>Baca petunjuk berikut dengan teliti sebelum memulai.</p>
+      <div class="stats">
+        <div class="stat"><b id="stSoal">-</b><span>Jumlah soal</span></div>
+        <div class="stat"><b id="stDurasi">-</b><span>Durasi</span></div>
+        <div class="stat"><b>PG dan PGK</b><span>Jenis soal</span></div>
+      </div>
+    </div>
+
+    <div class="berjalan hidden" id="infoBerjalan"></div>
+
+    <div class="panel">
+      <h3>Petunjuk pengerjaan</h3>
+      <ol class="langkah">
+        <li><span>Pastikan koneksi internet stabil selama ujian.</span></li>
+        <li><span><b>Pilihan Ganda (PG)</b>: pilih satu jawaban.</span></li>
+        <li><span><b>Pilihan Ganda Kompleks (PGK)</b>: boleh memilih lebih dari satu jawaban, ditandai kotak dan warna ungu.</span></li>
+        <li><span>Gunakan nomor di bagian atas layar untuk berpindah soal. Nomor yang berwarna berarti sudah dijawab.</span></li>
+        <li><span>Jawaban tersimpan otomatis. Tekan <b>Submit</b> jika sudah selesai. Setelah dikumpulkan, jawaban tidak dapat diubah.</span></li>
+        <li><span>Waktu dihitung oleh server dan terus berjalan walaupun kamu logout atau menutup browser.<b> Jika waktu habis, jawaban dikumpulkan secara otomatis.</b></span></li>
+      </ol>
+    </div>
+
+    <div class="panel aturan">
+      <h3>Tata tertib &amp; pengawasan</h3>
+      <ul class="larang">
+        <li>Ujian berjalan dalam mode layar penuh. Dilarang keluar dari layar penuh.</li>
+        <li>Dilarang berpindah tab, berpindah aplikasi, membuka jendela lain, atau meminimalkan layar.</li>
+        <li>Dilarang membelah layar (split screen, slide over, atau jendela mengambang).</li>
+        <li>Dilarang menyalin, mencontek, menempel, mengambil tangkapan layar, dan membuka developer tools.</li>
+      </ul>
+      <div class="catatan">
+        <b>Pelanggaran yang terdeteksi akan langsung mengakhiri ujian / Diskualifikasi. </b> Jawaban yang sudah terisi tetap dinilai, pelanggaran dicatat, dan kamu keluar otomatis. Jika layar sudah terbelah saat menekan tombol <i>Mulai Ujian</i>, ujian langsung dinyatakan selesai.
+      </div>
+      <div class="catatan hidden" id="tipIos">
+        <b>Pengguna iPhone/iPad:</b> browser iOS tidak mendukung layar penuh. Pengawasan tetap berjalan melalui deteksi perpindahan aplikasi dan layar terbelah.
+      </div>
+      <div class="catatan hidden" id="tipHp">
+        <b>Tips:</b> aktifkan mode <i>Jangan Ganggu</i> agar notifikasi tidak menutupi layar, dan jangan membuka panel/jendela lain saat ujian.
+      </div>
+    </div>
+
+    <div class="mulai">
+      <button class="btn lg" id="btnMulai">Mulai Ujian</button>
+      <small id="ketMulai">Waktu mulai berjalan setelah kamu menekan tombol ini.</small>
+    </div>
+  </div>
+</section>
+
+<!-- ============ UJIAN ============ -->
+<section id="ujian" class="hidden">
+  <header class="menu" id="menuUjian">
+    <div class="menu-inner">
+      <div class="brand-mini">
+        <div class="logo-wrap sm"><img class="logo-img" alt="Logo sekolah"></div>
+        <div><b>TRYOUT TKA</b><span>SMP Negeri 1 Jetis</span></div>
+      </div>
+      <div class="timer" id="timer" role="timer" aria-label="Sisa waktu">60:00</div>
+      <div class="who">
+        <b id="namaSiswa"></b>
+        <span id="progres"></span>
+      </div>
+      <div class="aksi-menu">
+        <button class="btn sm" id="btnSubmit">Submit</button>
+        <button class="btn ghost sm" id="btnLogout">Logout</button>
+      </div>
+      <div class="nav" id="nav" aria-label="Navigasi nomor soal"></div>
+      <div class="legenda" id="legenda">
+        <span><i class="sw pg"></i>Pilihan Ganda</span>
+        <span><i class="sw pgk"></i>Pilihan Ganda Kompleks</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="status">Memuat soal…</div>
+    <form id="daftarSoal" class="hidden" onsubmit="return false"></form>
+
+    <div id="hasil" class="card hidden">
+      <div>Nilai kamu</div>
+      <div class="skor" id="skor"></div>
+      <p id="detailHasil" style="margin:6px 0 16px"></p>
+      <p style="color:var(--muted);margin:0">Jawabanmu sudah tersimpan. Kamu bisa logout sekarang!</p>
+      <p style="color:var(--muted);margin:6px 0 0">#spensatis</p>
+    </div>
+  </main>
+</section>
+
+<dialog id="dlg">
+  <h3 id="dlgJudul">Konfirmasi</h3>
+  <p id="dlgTeks"></p>
+  <div class="aksi">
+    <button class="btn ghost" id="dlgBatal">Batal</button>
+    <button class="btn" id="dlgOk">Ya, lanjut</button>
+  </div>
+</dialog>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  /* ===== PENGATURAN ===== */
+  // 1 = pelanggaran pertama langsung mengakhiri ujian. Isi 3 bila ingin memberi 2x peringatan dulu.
+  const MAKS_PELANGGARAN = 1;
+
+  const mobile = matchMedia('(pointer: coarse) and (hover: none)').matches;
+  const iOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  /* ===== STATE ===== */
+  let token = sessionStorage.getItem('token') || '';
+  let nama = sessionStorage.getItem('nama') || '';
+  let user = sessionStorage.getItem('user') || '';
+  let soalList = [];
+  let terkunci = false;     // sudah dikumpulkan
+  let otomatis = false;     // sedang proses kumpul otomatis (waktu habis / pelanggaran)
+  let batas = 0, tick = null, simpanTimer = null;
+
+  // pengawasan
+  let pengawasAktif = false, adaFullscreen = false;
+  let jumlahPelanggaran = 0, daftarPelanggaran = [], terakhirPelanggaran = 0;
+  let baseW = 0, baseH = 0, baseLand = false, baseDpr = 1, rt = null, pengawasInterval = null;
+
+  /* ===== LOGO ===== */
+  // logo hanya tampil bila file logo sekolah berhasil dimuat (tidak ada gambar bawaan)
+  function setLogo(uri) {
+    document.querySelectorAll('.logo-img').forEach(i => {
+      i.onerror = () => i.closest('.logo-wrap').classList.remove('ada');
+      i.onload = () => i.closest('.logo-wrap').classList.add('ada');
+      i.src = uri;
+    });
+  }
+  google.script.run.withSuccessHandler(uri => { if (uri) setLogo(uri); }).withFailureHandler(() => {}).getLogo();
+
+  /* ===== LAYAR ===== */
+  function tampilLayar(id) {
+    ['login', 'petunjuk', 'ujian'].forEach(s => $(s).classList.toggle('hidden', s !== id));
+    window.scrollTo({ top: 0 });
+  }
+
+  /* ===== Pengamat gambar ===== */
+  const pengamatGambar = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const slot = e.target;
+      pengamatGambar.unobserve(slot);
+      google.script.run
+        .withSuccessHandler(uri => {
+          if (!uri) { slot.textContent = 'Gambar tidak dapat dimuat.'; return; }
+          const img = document.createElement('img');
+          img.className = 'gambar'; img.src = uri; img.alt = 'Gambar soal'; img.draggable = false;
+          slot.replaceWith(img);
+        })
+        .withFailureHandler(() => { slot.textContent = 'Gambar tidak dapat dimuat.'; })
+        .getGambar(token, slot.dataset.id);
+    });
+  }, { rootMargin: '400px 0px' });
+
+  /* ===== LOGIN ===== */
+  $('btnLogin').onclick = doLogin;
+  $('p').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  $('u').addEventListener('keydown', e => { if (e.key === 'Enter') $('p').focus(); });
+  $('btnLihat').onclick = () => {
+    const t = $('p').type === 'password';
+    $('p').type = t ? 'text' : 'password';
+    $('btnLihat').textContent = t ? 'Sembunyi' : 'Lihat';
+  };
+
+  function doLogin() {
+    const btn = $('btnLogin');
+    $('loginError').textContent = '';
+    btn.disabled = true; btn.textContent = 'Memeriksa…';
+    google.script.run
+      .withSuccessHandler(res => {
+        btn.disabled = false; btn.textContent = 'Masuk';
+        if (!res.ok) { $('loginError').textContent = res.pesan; return; }
+        token = res.token; nama = res.nama; user = $('u').value.trim();
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('nama', nama);
+        sessionStorage.setItem('user', user);
+        $('p').value = ''; $('p').type = 'password'; $('btnLihat').textContent = 'Lihat';
+        $('loginInfo').classList.add('hidden');
+        if (res.sudahSubmit) bukaUjian(res.hasil); else bukaPetunjuk(res);
+      })
+      .withFailureHandler(err => {
+        btn.disabled = false; btn.textContent = 'Masuk';
+        $('loginError').textContent = 'Gagal terhubung: ' + err.message;
+      })
+      .login($('u').value, $('p').value);
+  }
+
+  /* ===== PETUNJUK ===== */
+  function bukaPetunjuk(res) {
+    $('salam').textContent = 'Selamat datang, ' + nama;
+    $('stSoal').textContent = res.info.total;
+    $('stDurasi').textContent = res.info.durasi + ' mnt';
+    $('tipIos').classList.toggle('hidden', !iOS);
+    $('tipHp').classList.toggle('hidden', !mobile);
+    const info = $('infoBerjalan');
+    if (res.berjalan) {
+      const m = Math.max(0, Math.ceil(res.sisaDetik / 60));
+      info.innerHTML = '<b>Ujian sedang berjalan.</b> Sisa waktu sekitar ' + m + ' menit. Tekan tombol di bawah untuk melanjutkan.';
+      info.classList.remove('hidden');
+      $('btnMulai').textContent = 'Lanjutkan Ujian';
+      $('ketMulai').textContent = 'Waktu tidak berhenti selama kamu berada di halaman ini.';
+    } else {
+      info.classList.add('hidden');
+      $('btnMulai').textContent = 'Mulai Ujian';
+      $('ketMulai').textContent = 'Waktu mulai berjalan setelah kamu menekan tombol ini.';
+    }
+    $('btnMulai').disabled = false;
+    tampilLayar('petunjuk');
+  }
+
+  $('btnKeluarP').onclick = () => konfirmasi('Keluar dari akun?', () => { google.script.run.logout(token); keLogin(); });
+
+  /* ===== MULAI UJIAN ===== */
+  $('btnMulai').onclick = async () => {
+    const btn = $('btnMulai');
+    btn.disabled = true;
+    const teksAwal = btn.textContent;
+    btn.textContent = 'Menyiapkan…';
+
+    // HP/tablet: layar terbelah saat tombol ditekan -> ujian langsung selesai
+    if (mobile && layarTerbelah()) {
+      selesaiSebelumMulai('Layar terbelah saat menekan Mulai Ujian');
+      return;
+    }
+
+    // layar penuh (butuh interaksi klik; iPhone tidak mendukung)
+    adaFullscreen = false;
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) {
+      try { await req.call(el); } catch (e) { /* ditolak: lanjut tanpa layar penuh */ }
+      await new Promise(r => setTimeout(r, 500));
+      adaFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+
+    // desktop dalam layar penuh: layar harus penuh (tidak terbelah)
+    if (adaFullscreen && !mobile && layarTerbelah()) {
+      selesaiSebelumMulai('Layar terbelah saat menekan Mulai Ujian');
+      return;
+    }
+
+    btn.textContent = teksAwal;
+    bukaUjian(null);
+  };
+
+  function selesaiSebelumMulai(alasan) {
+    keluarFullscreen();
+    kirimAkhir('Pelanggaran: ' + alasan, () => {
+      google.script.run.logout(token);
+      keLogin('Ujian dinyatakan selesai karena terdeteksi pelanggaran: ' + alasan + '. Hubungi pengawas ujian bila ini terjadi karena kesalahan.');
+    });
+  }
+
+  /* ===== BUKA UJIAN ===== */
+  function bukaUjian(hasilLama) {
+    terkunci = false; otomatis = false;
+    tampilLayar('ujian');
+    $('namaSiswa').textContent = nama;
+    $('status').classList.remove('hidden');
+    $('status').textContent = 'Memuat soal…';
+    $('daftarSoal').classList.add('hidden');
+    $('hasil').classList.add('hidden');
+    $('btnSubmit').disabled = false;
+    $('nav').classList.remove('hidden');
+    $('legenda').classList.remove('hidden');
+    $('timer').classList.remove('hidden');
+    $('progres').textContent = '';
+
+    if (hasilLama) { tampilHasil(hasilLama); return; }
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.selesai) { tampilHasil(res.hasil); return; }
+        renderSoal(res);
+      })
+      .withFailureHandler(err => {
+        keluarFullscreen();
+        konfirmasi(err.message, () => keLogin(), { info: true, judul: 'Tidak dapat memuat soal' });
+      })
+      .getSoal(token);
+  }
+
+  function renderSoal(res) {
+    const list = res.soal;
+    if (!list.length) { $('status').textContent = 'Belum ada soal. Hubungi pengawas.'; return; }
+    soalList = list;
+
+    const form = $('daftarSoal');
+    form.innerHTML = '';
+    const nav = $('nav');
+    nav.innerHTML = '';
+
+    list.forEach((s, idx) => {
+      const urut = idx + 1;
+      const card = document.createElement('div');
+      const kompleks = s.tipe === 'PGK';
+      card.className = 'card ' + (kompleks ? 'pgk' : 'pg');
+      card.id = 'card' + s.id;
+
+      const no = document.createElement('div');
+      no.className = 'no'; no.textContent = 'Soal ' + urut;
+      const badge = document.createElement('span');
+      badge.className = 'badge ' + (kompleks ? 'pgk' : 'pg');
+      badge.textContent = kompleks ? 'Pilihan Ganda Kompleks' : 'Pilihan Ganda';
+      no.appendChild(badge);
+      card.appendChild(no);
+
+      const teks = document.createElement('p');
+      teks.className = 'teks'; teks.textContent = s.soal;
+      card.appendChild(teks);
+
+      if (kompleks) {
+        const pt = document.createElement('p');
+        pt.className = 'petunjuk';
+        pt.textContent = 'Pilih satu atau lebih jawaban yang benar.';
+        card.appendChild(pt);
+      }
+
+      if (s.adaGambar) {
+        const slot = document.createElement('div');
+        slot.className = 'gambar-load';
+        slot.dataset.id = s.id;
+        slot.textContent = 'Memuat gambar…';
+        card.appendChild(slot);
+        pengamatGambar.observe(slot);
+      }
+
+      const huruf = ['A', 'B', 'C', 'D'];
+      if (kompleks && s.opsi.E) huruf.push('E');
+      const tersimpan = (res.jawaban && res.jawaban[s.id]) || '';
+      huruf.forEach(h => {
+        const lb = document.createElement('label');
+        lb.className = 'opsi' + (kompleks ? ' cek' : '');
+        const inp = document.createElement('input');
+        inp.type = kompleks ? 'checkbox' : 'radio';
+        inp.name = 'soal' + s.id; inp.value = h;
+        if (tersimpan.indexOf(h) >= 0) inp.checked = true;
+        inp.onchange = () => { card.classList.remove('belum'); hitung(); jadwalkanSimpan(); };
+        const hr = document.createElement('span');
+        hr.className = 'huruf'; hr.textContent = h;
+        const tx = document.createElement('span');
+        tx.textContent = s.opsi[h];
+        lb.append(inp, hr, tx);
+        card.appendChild(lb);
+      });
+      form.appendChild(card);
+
+      const b = document.createElement('button');
+      b.type = 'button'; b.id = 'nav' + s.id; b.textContent = urut;
+      b.className = kompleks ? 'pgk' : 'pg';
+      b.title = kompleks ? 'Pilihan ganda kompleks' : 'Pilihan ganda';
+      b.setAttribute('aria-label', 'Ke soal ' + urut + (kompleks ? ', pilihan ganda kompleks' : ', pilihan ganda'));
+      b.onclick = () => card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nav.appendChild(b);
+    });
+
+    $('status').classList.add('hidden');
+    form.classList.remove('hidden');
+    hitung();
+    mulaiTimer(res.sisaDetik);
+    ukurHeader();
+    aktifkanPengawas();
+  }
+
+  function ukurHeader() {
+    document.documentElement.style.setProperty('--hdr', ($('menuUjian').offsetHeight + 12) + 'px');
+  }
+  window.addEventListener('resize', () => { if (!$('ujian').classList.contains('hidden')) ukurHeader(); });
+
+  /* ===== JAWABAN ===== */
+  function ambilJawaban() {
+    const j = {};
+    soalList.forEach(s => {
+      const dipilih = Array.from(document.querySelectorAll('input[name="soal' + s.id + '"]:checked'))
+        .map(c => c.value).sort();
+      if (dipilih.length) j[s.id] = dipilih.join('');
+    });
+    return j;
+  }
+
+  function hitung() {
+    const j = ambilJawaban();
+    $('progres').textContent = Object.keys(j).length + ' dari ' + soalList.length + ' terjawab';
+    soalList.forEach(s => {
+      const b = $('nav' + s.id);
+      if (b) b.classList.toggle('done', !!j[s.id]);
+    });
+  }
+
+  function jadwalkanSimpan() {
+    clearTimeout(simpanTimer);
+    simpanTimer = setTimeout(() => {
+      if (terkunci || otomatis) return;
+      google.script.run.withFailureHandler(() => {}).simpanJawaban(token, ambilJawaban());
+    }, 4000);
+  }
+
+  /* ===== TIMER ===== */
+  function mulaiTimer(sisaDetik) {
+    batas = Date.now() + sisaDetik * 1000;
+    clearInterval(tick);
+    tick = setInterval(perbaruiTimer, 1000);
+    perbaruiTimer();
+  }
+
+  function perbaruiTimer() {
+    const s = Math.max(0, Math.round((batas - Date.now()) / 1000));
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    const el = $('timer');
+    el.textContent = mm + ':' + ss;
+    el.classList.toggle('warn', s <= 300);
+    if (s <= 0) { clearInterval(tick); waktuHabis(); }
+  }
+
+  /* ===== KIRIM AKHIR (dengan percobaan ulang) ===== */
+  function kirimAkhir(catatan, cb, percobaan) {
+    percobaan = percobaan || 0;
+    google.script.run
+      .withSuccessHandler(r => cb(r))
+      .withFailureHandler(() => {
+        if (percobaan < 2) setTimeout(() => kirimAkhir(catatan, cb, percobaan + 1), 1500);
+        else cb(null);
+      })
+      .submitJawaban(token, ambilJawaban(), catatan);
+  }
+
+  function hentikanSemua() {
+    pengawasAktif = false;
+    clearInterval(tick); clearTimeout(simpanTimer);
+    if ($('dlg').open) $('dlg').close();
+    $('btnSubmit').disabled = true;
+    keluarFullscreen();
+  }
+
+  function waktuHabis() {
+    if (terkunci || otomatis) return;
+    otomatis = true;
+    hentikanSemua();
+    kirimAkhir('Waktu habis', res => {
+      google.script.run.logout(token);
+      keLogin(res
+        ? 'Waktu habis. Jawabanmu sudah dikumpulkan otomatis. Nilai: ' + res.skor + ' (' + res.benar + ' benar dari ' + res.total + ' soal).'
+        : 'Waktu habis. Jawabanmu akan dinilai otomatis dari data yang tersimpan.');
+    });
+  }
+
+  function selesaiPaksa() {
+    if (terkunci || otomatis) return;
+    otomatis = true;
+    hentikanSemua();
+    const alasan = daftarPelanggaran.join('; ');
+    kirimAkhir('Pelanggaran: ' + alasan, () => {
+      google.script.run.logout(token);
+      keLogin('Ujian dihentikan otomatis karena terdeteksi pelanggaran: ' + daftarPelanggaran[0] + '. Jawabanmu sudah dikumpulkan. Hubungi pengawas ujian bila ini terjadi karena kesalahan.');
+    });
+  }
+
+  /* ===== SUBMIT MANUAL ===== */
+  $('btnSubmit').onclick = () => {
+    if (terkunci || otomatis) return;
+    const j = ambilJawaban();
+    const kosong = soalList.filter(s => !j[s.id]);
+    soalList.forEach(s => $('card' + s.id).classList.toggle('belum', !j[s.id]));
+
+    if (kosong.length) {
+      $('card' + kosong[0].id).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const nomor = kosong.map(s => soalList.indexOf(s) + 1).join(', ');
+      konfirmasi('Soal ' + nomor + ' belum dijawab. Tetap kumpulkan sekarang?', kirim, { judul: 'Kumpulkan jawaban' });
+    } else {
+      konfirmasi('Kumpulkan jawaban sekarang? Jawaban tidak bisa diubah setelah dikumpulkan.', kirim, { judul: 'Kumpulkan jawaban' });
+    }
+  };
+
+  function kirim() {
+    const btn = $('btnSubmit');
+    btn.disabled = true; btn.textContent = 'Mengirim…';
+    google.script.run
+      .withSuccessHandler(res => { btn.textContent = 'Submit'; tampilHasil(res); })
+      .withFailureHandler(err => {
+        btn.disabled = false; btn.textContent = 'Submit';
+        konfirmasi(err.message, null, { info: true, judul: 'Gagal mengirim' });
+      })
+      .submitJawaban(token, ambilJawaban(), '');
+  }
+
+  function tampilHasil(res) {
+    terkunci = true;
+    pengawasAktif = false;
+    clearInterval(tick); clearTimeout(simpanTimer);
+    keluarFullscreen();
+    $('status').classList.add('hidden');
+    $('daftarSoal').classList.add('hidden');
+    $('hasil').classList.remove('hidden');
+    $('skor').textContent = res.skor;
+    $('detailHasil').textContent = res.benar + ' benar dari ' + res.total + ' soal';
+    $('btnSubmit').disabled = true;
+    $('nav').classList.add('hidden');
+    $('legenda').classList.add('hidden');
+    $('timer').classList.add('hidden');
+    $('progres').textContent = 'Jawaban sudah dikumpulkan';
+    ukurHeader();
+    window.scrollTo({ top: 0 });
+  }
+
+  /* ===== LOGOUT ===== */
+  $('btnLogout').onclick = () => {
+    const pesan = terkunci
+      ? 'Keluar dari akun?'
+      : 'Keluar dari akun? Waktu ujian tetap berjalan dan tidak bisa diulang. Jawaban yang tersimpan akan dinilai saat waktu habis.';
+    konfirmasi(pesan, () => {
+      pengawasAktif = false;           // keluar sengaja bukan pelanggaran
+      keluarFullscreen();
+      if (!terkunci) google.script.run.withFailureHandler(() => {}).simpanJawaban(token, ambilJawaban());
+      setTimeout(() => google.script.run.logout(token), terkunci ? 0 : 800);
+      keLogin();
+    }, { judul: 'Logout' });
+  };
+
+  function keLogin(pesan) {
+    pengawasAktif = false;
+    clearInterval(tick); clearTimeout(simpanTimer);
+    keluarFullscreen();
+    sessionStorage.clear();
+    token = ''; nama = ''; user = ''; soalList = []; terkunci = false; otomatis = false;
+    $('btnSubmit').disabled = false; $('btnSubmit').textContent = 'Submit';
+    $('nav').classList.remove('hidden');
+    $('legenda').classList.remove('hidden');
+    $('timer').classList.remove('hidden');
+    tampilLayar('login');
+    $('u').value = ''; $('p').value = '';
+    $('u').setAttribute('readonly', ''); $('p').setAttribute('readonly', '');
+    const info = $('loginInfo');
+    if (pesan) { info.textContent = pesan; info.classList.remove('hidden'); }
+    else info.classList.add('hidden');
+  }
+
+  /* ===== DIALOG ===== */
+  function konfirmasi(teks, aksi, opsi) {
+    opsi = opsi || {};
+    $('dlgJudul').textContent = opsi.judul || 'Konfirmasi';
+    $('dlgTeks').textContent = teks;
+    $('dlgBatal').classList.toggle('hidden', !!opsi.info);
+    $('dlgOk').textContent = opsi.info ? 'Mengerti' : 'Ya, lanjut';
+    $('dlgOk').onclick = () => { $('dlg').close(); if (aksi) aksi(); };
+    $('dlgBatal').onclick = () => $('dlg').close();
+    if (!$('dlg').open) $('dlg').showModal();
+  }
+
+  /* =====================================================================
+     PENGAWASAN ANTI-CURANG
+     Catatan: browser tidak bisa benar-benar "mengunci" perangkat. Sistem ini
+     mendeteksi perilaku mencurigakan lalu langsung mengakhiri ujian.
+     ===================================================================== */
+  function keluarFullscreen() {
+    try {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.webkitFullscreenElement) document.webkitExitFullscreen();
+    } catch (e) {}
+  }
+
+  function rasioLayar() {
+    const sw = screen.width, sh = screen.height;
+    if (!sw || !sh) return 1;
+    return (window.innerWidth * window.innerHeight) / (sw * sh);
+  }
+
+  // true bila jendela hanya menempati sebagian layar (split screen / slide over / jendela kecil)
+  function layarTerbelah() {
+    const r = rasioLayar();
+    if (mobile) return r < 0.66;
+    if (adaFullscreen) return r < 0.9;
+    return false;
+  }
+
+  function rebaseline() {
+    baseW = innerWidth; baseH = innerHeight;
+    baseLand = innerWidth > innerHeight; baseDpr = devicePixelRatio;
+  }
+
+  function aktifkanPengawas() {
+    jumlahPelanggaran = 0; daftarPelanggaran = []; terakhirPelanggaran = 0;
+    pengawasAktif = false;
+    // beri jeda agar transisi layar penuh selesai sebelum ukuran dijadikan patokan
+    setTimeout(() => {
+      if (terkunci || otomatis) return;
+      rebaseline();
+      pengawasAktif = true;
+    }, 1500);
+    clearInterval(pengawasInterval);
+    pengawasInterval = setInterval(cekBerkala, 2000);
+  }
+
+  function pelanggaranBaru(alasan) {
+    if (!pengawasAktif || terkunci || otomatis) return;
+    const now = Date.now();
+    if (now - terakhirPelanggaran < 1500) return;   // satu kejadian bisa memicu beberapa event
+    terakhirPelanggaran = now;
+    jumlahPelanggaran++;
+    daftarPelanggaran.push(alasan);
+    if (jumlahPelanggaran >= MAKS_PELANGGARAN) { selesaiPaksa(); return; }
+    konfirmasi('Terdeteksi: ' + alasan + '. Peringatan ' + jumlahPelanggaran + ' dari ' + MAKS_PELANGGARAN +
+      '. Pelanggaran berikutnya dapat mengakhiri ujian.', () => {
+      if (adaFullscreen && !document.fullscreenElement) {
+        const el = document.documentElement;
+        (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
+      }
+    }, { info: true, judul: 'Peringatan' });
+  }
+
+  function cekUkuran() {
+    if (!pengawasAktif) return;
+    if (layarTerbelah()) { pelanggaranBaru('Layar terbelah (split screen)'); return; }
+    const land = innerWidth > innerHeight;
+    if (land !== baseLand || devicePixelRatio !== baseDpr) { rebaseline(); return; }   // rotasi / zoom resmi
+    if (innerWidth < baseW * 0.85 || innerHeight < baseH * 0.75) {
+      pelanggaranBaru('Ukuran jendela diperkecil (layar terbelah)');
+    }
+  }
+
+  function cekBerkala() {
+    if (!pengawasAktif) return;
+    cekUkuran();
+    if (adaFullscreen && !(document.fullscreenElement || document.webkitFullscreenElement)) {
+      pelanggaranBaru('Keluar dari layar penuh');
+    }
+    if (!mobile && !document.hasFocus()) pelanggaranBaru('Berpindah jendela/aplikasi');
+    if (!mobile) {
+      const batasDev = adaFullscreen ? 160 : 300;
+      if (outerWidth - innerWidth > batasDev || outerHeight - innerHeight > batasDev) {
+        pelanggaranBaru('Developer tools terdeteksi terbuka');
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') pelanggaranBaru('Berpindah tab/aplikasi atau meminimalkan layar');
+  });
+  window.addEventListener('pagehide', () => pelanggaranBaru('Meninggalkan halaman ujian'));
+  window.addEventListener('blur', () => { if (!mobile) pelanggaranBaru('Berpindah jendela/aplikasi'); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => {
+    if (adaFullscreen && !(document.fullscreenElement || document.webkitFullscreenElement)) pelanggaranBaru('Keluar dari layar penuh');
+  }));
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(cekUkuran, 700); });
+  window.addEventListener('orientationchange', () => { setTimeout(() => { if (pengawasAktif && !layarTerbelah()) rebaseline(); }, 800); });
+
+  // cegah salin / tempel / klik kanan / seret / seleksi saat ujian
+  ['copy', 'cut', 'paste', 'contextmenu', 'dragstart'].forEach(ev =>
+    document.addEventListener(ev, e => { if (!$('ujian').classList.contains('hidden')) e.preventDefault(); }));
+  document.addEventListener('selectstart', e => { if (!$('ujian').classList.contains('hidden')) e.preventDefault(); });
+
+  document.addEventListener('keydown', e => {
+    if (!pengawasAktif) return;
+    const k = (e.key || '').toLowerCase();
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (k === 'f12' || (ctrl && e.shiftKey && ['i', 'j', 'c'].includes(k)) || (ctrl && k === 'u')) {
+      e.preventDefault(); pelanggaranBaru('Mencoba membuka developer tools / sumber halaman'); return;
+    }
+    if (ctrl && ['c', 'x', 'v', 'a', 's', 'p', 'f', 'g', '+', '-', '=', '0'].includes(k)) e.preventDefault();
+  });
+  document.addEventListener('keyup', e => {
+    if (pengawasAktif && e.key === 'PrintScreen') {
+      try { navigator.clipboard.writeText(''); } catch (_) {}
+      pelanggaranBaru('Menekan tombol Print Screen');
+    }
+  });
+  document.addEventListener('wheel', e => { if (pengawasAktif && e.ctrlKey) e.preventDefault(); }, { passive: false });
+  window.addEventListener('beforeunload', e => {
+    if (pengawasAktif && !terkunci && !otomatis) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  /* ===== PULIHKAN SESI SAAT HALAMAN DIMUAT ULANG ===== */
+  if (token) {
+    google.script.run
+      .withSuccessHandler(r => {
+        nama = r.nama;
+        if (r.hasil) bukaUjian(r.hasil); else bukaPetunjuk(r);
+      })
+      .withFailureHandler(() => keLogin())
+      .pulihkanSesi(token);
+  }
+</script>
+</body>
+</html>
